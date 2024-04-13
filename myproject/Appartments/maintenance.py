@@ -21,28 +21,12 @@ def maintenance_requests(request, id=None):
     
     elif request.method == 'POST':
         data = json.loads(request.body)
-        
-        # Check if the 'apartment_id' is provided in the request data
-        apartment_id = data.get('apartment_id')
-        if not apartment_id:
-            return JsonResponse({'error': 'Apartment ID is required'}, status=400)
-        
-        # Check if the ApartmentModel instance exists
-        try:
-            apartment = ApartmentModel.objects.get(pk=apartment_id)
-        except ApartmentModel.DoesNotExist:
-            return JsonResponse({'error': 'Apartment not found'}, status=404)
-        
-        # Attach the apartment instance to the data before passing it to the serializer
-        data['apartment'] = apartment_id
-        
-        # Create the serializer with the modified data
         serializer = MaintenanceRequestSerializer(data=data)
-        
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+        
     
     elif request.method in ['PUT', 'PATCH']:
         data = json.loads(request.body)
@@ -68,3 +52,19 @@ def maintenance_requests(request, id=None):
             return JsonResponse({'error': 'Maintenance Request not found'}, status=404)
         except Exception as e:
             return JsonResponse({'error': f'Failed to delete Maintenance Request: {str(e)}'}, status=500)
+
+@csrf_exempt
+def solved_maintenance(request, id=None):
+    if request.method == 'POST':
+        try:
+            maintenance_request = MaintenanceRequestModel.objects.get(pk=id)
+            maintenance_request.solved = True
+            maintenance_request.save()
+            serializer = MaintenanceRequestSerializer(maintenance_request)
+            return JsonResponse(serializer.data, status=200)
+        except MaintenanceRequestModel.DoesNotExist:
+            return JsonResponse({'error': 'Maintenance Request not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': f'Failed to mark Maintenance Request as solved: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

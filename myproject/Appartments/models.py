@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator , MaxLengthValidator ,RegexValidator
 
 class AmenityModel(models.Model):
     name = models.CharField(max_length=255)
@@ -19,13 +19,18 @@ STATUS_CHOICES = [
 ]
 
 class ApartmentModel(models.Model):
+    name = models.TextField(max_length=15,blank=True,null=True)
     location = models.CharField(max_length=100)
     description = models.TextField()
     price_per_month = models.DecimalField(max_digits=10, decimal_places=2)
     rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     amenities = models.ManyToManyField(AmenityModel)
     booked = models.BooleanField(default=False)
-    photo_url = models.URLField(blank=True, null=True)
+    photo_url = models.CharField(max_length=2000, blank=True,null=True, validators=[RegexValidator(
+        regex=r'^https?://',  # Regular expression to match "http://" or "https://"
+        message='URL must start with "http://" or "https://"',
+        code='invalid_url'
+    )])
 
 class LandModel(models.Model):
     location = models.CharField(max_length=100)
@@ -35,6 +40,7 @@ class LandModel(models.Model):
     photo_url = models.URLField(blank=True, null=True)
 
 class AirbnbModel(models.Model):
+    name = models.TextField(max_length=15,blank=True,null=True)
     location = models.CharField(max_length=100)
     description = models.TextField()
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
@@ -45,13 +51,15 @@ class AirbnbModel(models.Model):
     photo_url = models.URLField(blank=True, null=True)
 
 class MaintenanceRequestModel(models.Model):
-    apartment = models.ForeignKey(ApartmentModel, on_delete=models.CASCADE)
+    #apartment = models.ForeignKey(ApartmentModel, on_delete=models.CASCADE)
+    apartment = models.TextField()
     issue_description = models.TextField()
     solved = models.BooleanField(default=False)
 
 class InquiryModel(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
     #land = models.ForeignKey(LandModel, on_delete=models.CASCADE)
+    email = models.EmailField(blank=True, null= True)
     message = models.TextField()
     solved = models.BooleanField(default=False)
 

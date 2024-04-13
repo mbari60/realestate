@@ -1,9 +1,11 @@
-# views.py
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import AppartmentBookingModel, AirbnbBookingModel
 from .serializers import AppartmentBookingSerializer, AirbnbBookingSerializer
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
+from django.db.models import Q
 
 @csrf_exempt
 def appartment_bookings(request, id=None):
@@ -51,6 +53,7 @@ def appartment_bookings(request, id=None):
             return JsonResponse({'error': f'Failed to delete booking: {str(e)}'}, status=500)
 
 @csrf_exempt
+#@login_required
 def airbnb_bookings(request, id=None):
     if request.method == 'GET':
         if id is not None:
@@ -67,6 +70,20 @@ def airbnb_bookings(request, id=None):
 
     elif request.method == 'POST':
         data = json.loads(request.body)
+        start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+        end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+
+        existing_bookings = AirbnbBookingModel.objects.filter(
+            Q(airbnb=data['airbnb']) &
+            (Q(start_date__range=[start_date, end_date]) |
+            Q(end_date__range=[start_date, end_date]) |
+            Q(start_date__lte=start_date, end_date__gte=end_date))
+        )
+
+        if existing_bookings.exists():
+            return JsonResponse({'error': 'This property is already booked for the selected dates'}, status=400)
+
+        #data['user'] = request.user.id
         serializer = AirbnbBookingSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

@@ -1,9 +1,17 @@
-# views.py
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 import json
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+
+def generate_access_token(user):
+    access_token = AccessToken.for_user(user)
+    return str(access_token)
+
+def generate_refresh_token(user):
+    refresh_token = RefreshToken.for_user(user)
+    return str(refresh_token)
 
 @csrf_exempt
 def signup(request):
@@ -29,7 +37,16 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return JsonResponse({'message': 'Login successful', 'success': True}, status=200)
+            # Generate access and refresh tokens
+            access_token = generate_access_token(user)
+            refresh_token = generate_refresh_token(user)
+            # Include additional user information in the response
+            user_data = {
+                'id': user.id,
+                'is_superuser': user.is_superuser
+            }
+            # Return tokens and user information in the response
+            return JsonResponse({'message': 'Login successful', 'success': True, 'access_token': access_token, 'refresh_token': refresh_token, 'user': user_data}, status=200)
         else:
             return JsonResponse({'error': 'Invalid username or password'}, status=401)
     else:

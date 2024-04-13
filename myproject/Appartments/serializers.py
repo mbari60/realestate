@@ -27,16 +27,16 @@ class AirbnbSerializer(serializers.ModelSerializer):
 
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
     # Define a custom field to represent the related apartment's ID
-    apartment_id = serializers.PrimaryKeyRelatedField(queryset=ApartmentModel.objects.all(), source='apartment')
+    # apartment_id = serializers.PrimaryKeyRelatedField(queryset=ApartmentModel.objects.all(), source='apartment')
 
     class Meta:
         model = MaintenanceRequestModel
-        fields = ['id', 'apartment_id', 'issue_description', 'solved']
+        fields = '__all__'
 
-    def create(self, validated_data):
-        # No need to extract apartment_id, it will be included in validated_data
-        maintenance_request = MaintenanceRequestModel.objects.create(**validated_data)
-        return maintenance_request
+    # def create(self, validated_data):
+    #     # No need to extract apartment_id, it will be included in validated_data
+    #     maintenance_request = MaintenanceRequestModel.objects.create(**validated_data)
+    #     return maintenance_request
 
 class InquirySerializer(serializers.ModelSerializer):
     class Meta:
