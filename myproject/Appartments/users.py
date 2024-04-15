@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 import json
+from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 def generate_access_token(user):
@@ -14,16 +15,35 @@ def generate_refresh_token(user):
     return str(refresh_token)
 
 @csrf_exempt
+def get_user(request, id=None):
+    if request.method == 'GET':
+        if id:
+            try:
+                user = User.objects.get(pk=id)
+                serializer = UserSerializer(user)
+                return JsonResponse(serializer.data)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
+        else:
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return JsonResponse(serializer.data, safe=False)
+    
+
+@csrf_exempt
 def signup(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
-        if not username or not password:
-            return JsonResponse({'error': 'Both username and password are required'}, status=400)
+        last_name = data.get('last_name')
+        first_name = data.get('first_name')
+        email = data.get('email')
+        if not username or not password or not last_name or not first_name or not email:
+            return JsonResponse({'error': 'All fields are required'}, status=400)
         if User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'Username already exists'}, status=400)
-        user = User.objects.create_user(username=username, password=password)
+        user = User.objects.create_user(username=username, password=password,last_name=last_name,first_name=first_name,email=email )
         return JsonResponse({'message': 'User created successfully', 'success': True}, status=201)
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
@@ -51,6 +71,7 @@ def login_view(request):
             return JsonResponse({'error': 'Invalid username or password'}, status=401)
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
+    
 
 @csrf_exempt
 def logout_view(request):
@@ -59,3 +80,5 @@ def logout_view(request):
         return JsonResponse({'message': 'Logged out successfully', 'success': True}, status=200)
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
+
+

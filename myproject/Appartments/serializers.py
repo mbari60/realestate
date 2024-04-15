@@ -1,5 +1,13 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
+
 from .models import CommunityForumPostModel,AmenityModel,CleanerModel,ApartmentModel,TransportServiceModel,AirbnbBookingModel,LandModel,AirbnbModel,MaintenanceRequestModel,InquiryModel,AppartmentBookingModel
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 class AmenitySerializer(serializers.ModelSerializer):
     class Meta:

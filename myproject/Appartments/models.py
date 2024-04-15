@@ -52,6 +52,7 @@ class AirbnbModel(models.Model):
 
 class MaintenanceRequestModel(models.Model):
     #apartment = models.ForeignKey(ApartmentModel, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     apartment = models.TextField()
     issue_description = models.TextField()
     solved = models.BooleanField(default=False)

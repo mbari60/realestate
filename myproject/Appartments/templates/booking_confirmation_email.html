@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .details {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Booking Confirmation from propertyhubkenya </h1>
+        <p>Dear {{ user.username }},</p>
+        <p>Your booking for {{ airbnb.name }} has been confirmed.</p>
+        <div class="details">
+            <p><strong>Details:</strong></p>
+            <p><strong>Start Date:</strong> {{ booking.start_date }}</p>
+            <p><strong>End Date:</strong> {{ booking.end_date }}</p>
+            <p><strong>Total Cost:</strong> {{ total_cost }}</p>
+        </div>
+    </div>
+</body>
+</html>

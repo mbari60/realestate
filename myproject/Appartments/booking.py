@@ -1,11 +1,16 @@
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import AppartmentBookingModel, AirbnbBookingModel
+from django.contrib.auth.models import User
+from .models import AppartmentBookingModel, AirbnbBookingModel , AirbnbModel ,ApartmentModel
 from .serializers import AppartmentBookingSerializer, AirbnbBookingSerializer
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 @csrf_exempt
 def appartment_bookings(request, id=None):
@@ -18,17 +23,33 @@ def appartment_bookings(request, id=None):
             except AppartmentBookingModel.DoesNotExist:
                 return JsonResponse({'error': 'Booking not found'}, status=404)
         else:
-            bookings = AppartmentBookingModel.objects.all()
+            bookings = AppartmentBookingModel.objects.filter(booked=False)
             serializer = AppartmentBookingSerializer(bookings, many=True)
             return JsonResponse(serializer.data, safe=False)
 
     elif request.method == 'POST':
         data = json.loads(request.body)
+
+        apartment_id = data['apartment']
+        user_id = data['user']
+        user = User.objects.get(pk = user_id)
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        try:
+            apartment = ApartmentModel.objects.get(pk=apartment_id)
+        except ApartmentModel.DoesNotExist:
+            return JsonResponse({'error': 'Apartment not found'}, status=404)
+
+
         serializer = AppartmentBookingSerializer(data=data)
         if serializer.is_valid():
+            apartment.booked = True
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return JsonResponse({'message': 'Apartment booked successfully'}, status=201)
+        return JsonResponse({'errors': serializer.errors}, status=400)
 
     elif request.method == 'PUT' or request.method == 'PATCH':
         data = json.loads(request.body)
@@ -83,10 +104,38 @@ def airbnb_bookings(request, id=None):
         if existing_bookings.exists():
             return JsonResponse({'error': 'This property is already booked for the selected dates'}, status=400)
 
+        airbnb_id = data['airbnb']
+        airbnb = AirbnbModel.objects.get(pk=airbnb_id)
+        price_per_night = airbnb.price_per_night
+        num_nights = (end_date - start_date).days
+
+        total_cost = num_nights * price_per_night
+
+        try:
+            user_id = data['user']
+            user_details = User.objects.get(pk=user_id)
+            user_email = user_details.email
+        except User.DoesNotExist:
+            # Handle the case where the user does not exist
+            # This could involve returning an error response or taking other appropriate action
+            user_email = None  # Set user_email to None or any default value as needed
+            # Log an error message or perform any other necessary logging
+            return JsonResponse({'error':'user does not exist'})
+        except Exception as e:
+            # Handle any other exceptions that might occur during user retrieval
+            # This could involve logging the exception or taking other appropriate action
+            user_email = None  # Set user_email to None or any default value as needed
+            return JsonResponse({'error':"Error occurred while retrieving user details:"})
+        
         #data['user'] = request.user.id
         serializer = AirbnbBookingSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            #sending confirmation email
+
+            send_booking_confirmation_email(data,airbnb,user_details,user_email, total_cost)
+
+
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
@@ -111,3 +160,24 @@ def airbnb_bookings(request, id=None):
             return JsonResponse({'error': 'Booking not found'}, status=404)
         except Exception as e:
             return JsonResponse({'error': f'Failed to delete booking: {str(e)}'}, status=500)
+
+def send_booking_confirmation_email(data, airbnb, user_details, user_email, total_cost):
+    subject = 'Booking Confirmation'
+
+    # Prepare email content
+    context = {
+        'booking': data,
+        'airbnb': airbnb,
+        'user': user_details,
+        'total_cost': total_cost
+    }
+    html_message = render_to_string('booking_confirmation_email.html', context)
+
+    # Create the email object
+    email = EmailMultiAlternatives(subject, strip_tags(html_message), 'kevin.wanjiru600@gmail.com', [user_email])
+
+    # Attach the HTML content
+    email.attach_alternative(html_message, "text/html")
+
+    # Send the email
+    email.send()
