@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from .models import AppartmentBookingModel, AirbnbBookingModel , AirbnbModel ,ApartmentModel
-from .serializers import AppartmentBookingSerializer, AirbnbBookingSerializer
+from .serializers import AppartmentBookingSerializer, AirbnbBookingSerializer,ApartmentSerializer
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.db.models import Q
@@ -11,6 +11,28 @@ from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+
+#getting all bookings for the admin
+def get_all_aparment_bookings(request):
+    if request.method == 'GET':
+        bookings = ApartmentModel.objects.filter(booked=True)
+        serializer = ApartmentSerializer(bookings, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+# declaring a apartment vacant
+@csrf_exempt
+def declare_not_booked(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        apartment_id = data['apartment']
+        try:
+            apartment = ApartmentModel.objects.get(pk=apartment_id)
+            apartment.booked = False
+            apartment.save()
+        except ApartmentModel.DoesNotExist:
+            return JsonResponse({'error': 'Apartment not found'}, status=404)
+        return JsonResponse({'message': 'Apartment declared vacant'}, status=201)
+
 
 @csrf_exempt
 def appartment_bookings(request, id=None):
@@ -40,15 +62,19 @@ def appartment_bookings(request, id=None):
 
         try:
             apartment = ApartmentModel.objects.get(pk=apartment_id)
+            apartment.booked = True
+            apartment.save()
         except ApartmentModel.DoesNotExist:
             return JsonResponse({'error': 'Apartment not found'}, status=404)
 
 
         serializer = AppartmentBookingSerializer(data=data)
         if serializer.is_valid():
-            apartment.booked = True
             serializer.save()
+            #email sending 
+            send_apartmentBooking_confirmation_email(user,apartment)
             return JsonResponse({'message': 'Apartment booked successfully'}, status=201)
+        
         return JsonResponse({'errors': serializer.errors}, status=400)
 
     elif request.method == 'PUT' or request.method == 'PATCH':
@@ -131,8 +157,8 @@ def airbnb_bookings(request, id=None):
         serializer = AirbnbBookingSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            #sending confirmation email
 
+            #sending confirmation email
             send_booking_confirmation_email(data,airbnb,user_details,user_email, total_cost)
 
 
@@ -181,3 +207,37 @@ def send_booking_confirmation_email(data, airbnb, user_details, user_email, tota
 
     # Send the email
     email.send()
+
+
+def send_apartmentBooking_confirmation_email(user, apartment):
+    subject_user = 'Apartment Booking Confirmation'
+    subject_owner = 'New Apartment Booking'
+
+    user_email = user.email
+    owner_email = 'kevin.wanjiru600@gmail.com'
+
+    # Prepare email content for user
+    context_user = {
+        'user': user,
+        'apartment': apartment
+    }
+    html_message_user = render_to_string('apartment_booking_confirmation_email.html', context_user)
+
+    # Prepare email content for owner
+    context_owner = {
+        'user': user,
+        'apartment': apartment
+    }
+    text_message_owner = f"New apartment booking by {user.username}. User's email: {user.email} for apartment {apartment.name}"
+    #html_message_owner = f"<p>New apartment booking by {user.username}. User's email: {user.email}</p>"
+
+    # Create the email objects
+    email_user = EmailMultiAlternatives(subject_user, strip_tags(html_message_user), 'kevin.wanjiru600@gmail.com', [user_email])
+    email_owner = EmailMultiAlternatives(subject_owner, text_message_owner, 'kevin.wanjiru600@gmail.com', [owner_email])
+
+    # Attach the HTML content for user
+    email_user.attach_alternative(html_message_user, "text/html")
+
+    # Send the emails
+    email_user.send()
+    email_owner.send()

@@ -21,6 +21,8 @@ urlpatterns = [
     path('solved_maintenance/<int:id>/', maintenance.solved_maintenance),
     path('inquiries/', inquiry.inquiries),
     path('inquiries/<int:id>/', inquiry.inquiries),
+    path('declare_vacant/', booking.declare_not_booked),
+    path('all_appartment_bookings/', booking.get_all_aparment_bookings),
     path('appartment_bookings/', booking.appartment_bookings),
     path('appartment_bookings/<int:id>/', booking.appartment_bookings),
     path('bnb_bookings/', booking.airbnb_bookings),
