@@ -97,9 +97,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # cors setup
 CORS_ORIGIN_ALLOW_ALL = False
 
-# CORS_ORIGIN_WHITELIST = (
-#     'http://localhost:3000',
-# )
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
+)
 
 # #setting cookies expiration time 
 # SESSION_EXPIRE_AT_BROWSER_CLOSE = True

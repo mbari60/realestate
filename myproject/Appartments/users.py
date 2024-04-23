@@ -44,6 +44,8 @@ def signup(request):
         if User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'Username already exists'}, status=400)
         user = User.objects.create_user(username=username, password=password,last_name=last_name,first_name=first_name,email=email )
+    
+        user.save()
         return JsonResponse({'message': 'User created successfully', 'success': True}, status=201)
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
