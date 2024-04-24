@@ -43,6 +43,8 @@ def signup(request):
             return JsonResponse({'error': 'All fields are required'}, status=400)
         if User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'Username already exists'}, status=400)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Email already exists'}, status=400)
         user = User.objects.create_user(username=username, password=password,last_name=last_name,first_name=first_name,email=email )
     
         user.save()
