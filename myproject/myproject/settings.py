@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 
 #from django documentation 
-import dj_database_url
+# import dj_database_url
 
 
 #posgres settup
@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-+0_w#ppj4n1bq&m4l9&)mrsduc-z=h6563wuw18_j@@8+gddr&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -69,18 +69,20 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'kevin.wanjiru600@gmail.com'
+EMAIL_HOST_PASSWORD = 'kgzctysizoenhiwe'
 
 
 APPEND_SLASH=False
 
 #setup
-# INTERNAL_IPS = [
-#     # ...
-#     "127.0.0.1",
-#     # ...
-# ]
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
+
 #redirecting to login
 LOGIN_URL = '/'
 
@@ -104,8 +106,8 @@ CORS_ORIGIN_WHITELIST = (
 )
 
 # #setting cookies expiration time 
-# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-# SESSION_COOKIE_AGE = 30 * 24 * 60 * 60
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 30 * 24 * 60 * 60 # 30 days
 
 #jwt tokens setup
 REST_FRAMEWORK = {
@@ -141,12 +143,12 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 # DATABASES = {
 #     'default': {
@@ -161,9 +163,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 #from django documentation
 # Replace the SQLite DATABASES configuration with PostgreSQL:
-DATABASES = {
-    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-}
+
+# for posgresql
+# DATABASES = {
+#     'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+# }
 
 
 # Password validation
@@ -195,6 +199,43 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+# for mpesa 
+MPESA_ENVIRONMENT = 'sandbox'
+
+# Your Safaricom credentials
+DARAJA_CONSUMER_KEY = 'your_consumer_key'
+DARAJA_CONSUMER_SECRET = 'your_consumer_secret'
+
+# Your Lipa Na M-Pesa Online (STK Push) credentials
+DARAJA_SHORTCODE = 'your_shortcode'
+DARAJA_LNM_PASSKEY = 'your_lnm_passkey'
+
+# Callback URL (use Ngrok URL when developing locally)
+DARAJA_CALLBACK_URL = 'https://whereto/callback'
+
+# Type of shortcode
+# Possible values:
+# - paybill (For Paybill)
+# - till_number (For Buy Goods Till Number)
+
+MPESA_SHORTCODE_TYPE = 'paybill'
+
+# Lipa na MPESA Online passkey
+# Sandbox passkey is available on test credentials page
+# Production passkey is sent via email once you go live
+
+MPESA_PASSKEY = 'PASS KEY HERE'
+
+# Username for initiator (to be used in B2C, B2B, AccountBalance and TransactionStatusQuery Transactions)
+
+MPESA_INITIATOR_USERNAME = 'testapi'
+
+# Plaintext password for initiator (to be used in B2C, B2B, AccountBalance and TransactionStatusQuery Transactions)
+
+MPESA_INITIATOR_SECURITY_CREDENTIAL = 'Safaricom999!*!'
+
+
 
 
 # Static files (CSS, JavaScript, Images)

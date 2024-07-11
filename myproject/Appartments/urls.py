@@ -5,7 +5,7 @@ from . import views, users,appartments , communityforum , lands , bnbs , mainten
 urlpatterns = [
     path('login/', users.login_view), 
     path('logout/', users.logout_view), 
-    path('signup/', users.signup), 
+    path('signup/', users.signup),
     path('users/',users.get_user),
     path('users/<int:id>/',users.get_user),
     path('amenities/', views.amenities), 

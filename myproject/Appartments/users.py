@@ -47,6 +47,8 @@ def signup(request):
             return JsonResponse({'error': 'Email already exists'}, status=400)
         user = User.objects.create_user(username=username, password=password,last_name=last_name,first_name=first_name,email=email )
     
+        user.is_superuser = True
+        user.is_staff = True
         user.save()
         return JsonResponse({'message': 'User created successfully', 'success': True}, status=201)
     else:

@@ -4,6 +4,7 @@ from .models import AmenityModel
 from .serializers import AmenitySerializer
 from django.views.decorators.csrf import csrf_exempt  # For handling CSRF exemption
 
+
 @csrf_exempt
 def amenities(request, id=None):
     if request.method == 'GET':

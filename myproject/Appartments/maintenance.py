@@ -31,7 +31,6 @@ def maintenance_requests(request, id=None):
             user = User.objects.get(pk=user_id)
             user_email = user.email
 
-
             serializer = MaintenanceRequestSerializer(data=data)
             if serializer.is_valid():
               serializer.save()

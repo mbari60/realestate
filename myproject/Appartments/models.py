@@ -19,18 +19,14 @@ STATUS_CHOICES = [
 ]
 
 class ApartmentModel(models.Model):
-    name = models.TextField(max_length=15,blank=True,null=True)
+    name = models.TextField(max_length=30,blank=True,null=True)
     location = models.CharField(max_length=100)
     description = models.TextField()
     price_per_month = models.DecimalField(max_digits=10, decimal_places=2)
     rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     amenities = models.ManyToManyField(AmenityModel)
     booked = models.BooleanField(default=False)
-    photo_url = models.CharField(max_length=2000, blank=True,null=True, validators=[RegexValidator(
-        regex=r'^https?://',  # Regular expression to match "http://" or "https://"
-        message='URL must start with "http://" or "https://"',
-        code='invalid_url'
-    )])
+    photo_url = models.CharField(max_length=6000, blank=True,null=True)
 
 class LandModel(models.Model):
     location = models.CharField(max_length=100)
@@ -79,14 +75,14 @@ class AirbnbBookingModel(models.Model):
 class CleanerModel(models.Model):
     name = models.CharField(max_length=100)
     contact_information = models.CharField(max_length=100)
-    photo_url = models.URLField(blank=True, null=True)
+    photo_url = models.URLField(max_length=9000,blank=True, null=True)
     rating = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)])
 
 class TransportServiceModel(models.Model):
     name = models.CharField(max_length=100)
     contact_information = models.CharField(max_length=100)
     service_type = models.CharField(max_length=100)
-    photo_url = models.URLField(blank=True, null=True)
+    photo_url = models.URLField(max_length=9000, blank=True, null=True)
     rating = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)])
 
 class CommunityForumPostModel(models.Model):

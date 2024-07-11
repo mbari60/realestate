@@ -2,7 +2,7 @@ import json
 from django.http import JsonResponse
 from .models import ApartmentModel
 from .serializers import ApartmentSerializer
-from django.views.decorators.csrf import csrf_exempt 
+from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def apartments(request, id=None):
@@ -27,7 +27,7 @@ def apartments(request, id=None):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
-    
+     
     elif request.method in ['PUT', 'PATCH']:
         data = json.loads(request.body)
         
